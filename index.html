@@ -27,7 +27,15 @@
         .question-container {
             background: #eee;
             padding: 15px;
-            margin: 10px auto;
+            margin: 30px auto;
+            width: 60%;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        .question-media-container {
+            background: #eee;
+            padding: 100px 15px;
+            margin: 30px auto;
             width: 60%;
             border-radius: 10px;
             font-size: 18px;
@@ -37,8 +45,8 @@
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             justify-content: center;
-            margin-top: 20px;
             width: 60%;
+            margin: 10px auto;
         }
         .answer {
             padding: 15px;
@@ -71,7 +79,7 @@
 <body>
     <div class="timer" id="timer">12</div>
     <div class="question-container" id="question"></div>
-    <div class="question-container" id="media"></div>
+    <div class="question-media-container" id="media"></div>
     <div class="answers">
         <div class="answer red" id="answer1"></div>
         <div class="answer blue" id="answer2"></div>
