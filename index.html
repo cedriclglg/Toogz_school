@@ -69,22 +69,26 @@
 </head>
 <body>
     <div class="timer" id="timer">12</div>
-    <div class="question-container" id="question">Quel est le nombre de grains de sable dans le désert?</div>
-    <div class="question-container" id="media">Média question</div>
+    <div class="question-container" id="question"></div>
+    <div class="question-container" id="media"></div>
     <div class="answers">
-        <div class="answer red" id="answer1">Réponse 1</div>
-        <div class="answer blue" id="answer2">Réponse 2</div>
-        <div class="answer green" id="answer3">Réponse 3</div>
-        <div class="answer yellow" id="answer4">Réponse 4</div>
+        <div class="answer red" id="answer1"></div>
+        <div class="answer blue" id="answer2"></div>
+        <div class="answer green" id="answer3"></div>
+        <div class="answer yellow" id="answer4"></div>
     </div>
     <div class="next-btn" id="next">&gt;</div>
     <script>
         let questions = [
-            { text: "Quel est le nombre de grains de sable dans le désert?", media: "Média question", answers: ["Réponse 1", "Réponse 2", "Réponse 3", "Réponse 4"] }
+            { text: "Quel est le nombre de grains de sable dans le désert?", media: "Média question", answers: ["1 milliard", "100 milliards", "1 trillion", "Infini"] },
+            { text: "Quelle est la capitale de la France?", media: "Média question", answers: ["Londres", "Berlin", "Paris", "Madrid"] },
+            { text: "Combien de planètes y a-t-il dans le système solaire?", media: "Média question", answers: ["7", "8", "9", "10"] }
         ];
         
         let currentQuestionIndex = 0;
         let timeLeft = 12;
+        let timerInterval;
+
         const timerElement = document.getElementById("timer");
         const questionElement = document.getElementById("question");
         const mediaElement = document.getElementById("media");
@@ -101,22 +105,28 @@
             questionElement.textContent = question.text;
             mediaElement.textContent = question.media;
             answerElements.forEach((el, i) => el.textContent = question.answers[i]);
+            resetTimer();
         }
         
-        function countdown() {
-            if (timeLeft > 0) {
-                timeLeft--;
-                timerElement.textContent = timeLeft;
-            }
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 12;
+            timerElement.textContent = timeLeft;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                } else {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
         }
         
         nextButton.addEventListener("click", () => {
             currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
             loadQuestion(currentQuestionIndex);
-            timeLeft = 12;
         });
         
-        setInterval(countdown, 1000);
         loadQuestion(currentQuestionIndex);
     </script>
 </body>
