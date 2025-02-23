@@ -1,1 +1,92 @@
-Hello World
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interactif</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+        }
+        .timer {
+            background: #eee;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px auto;
+        }
+        .question {
+            background: #eee;
+            padding: 15px;
+            margin: 10px auto;
+            width: 60%;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        .answers {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .answer {
+            width: 200px;
+            padding: 15px;
+            border-radius: 10px;
+            color: black;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .red { background-color: #ff6961; }
+        .blue { background-color: #779ecb; }
+        .green { background-color: #77dd77; }
+        .yellow { background-color: #fdfd96; }
+        .next-btn {
+            margin-top: 20px;
+            background: #ddd;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer" id="timer">12</div>
+    <div class="question">Quel est le nombre de grains de sable dans le désert?</div>
+    <div class="answers">
+        <div class="answer red">Réponse 1</div>
+        <div class="answer blue">Réponse 2</div>
+        <div class="answer green">Réponse 3</div>
+        <div class="answer yellow">Réponse 4</div>
+    </div>
+    <div class="next-btn">&gt;</div>
+    <script>
+        let timeLeft = 12;
+        const timerElement = document.getElementById("timer");
+        
+        function countdown() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+            }
+        }
+        setInterval(countdown, 1000);
+    </script>
+</body>
+</html>
