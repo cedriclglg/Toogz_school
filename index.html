@@ -24,7 +24,7 @@
             font-weight: bold;
             margin: 20px auto;
         }
-        .question {
+        .question-container {
             background: #eee;
             padding: 15px;
             margin: 10px auto;
@@ -33,14 +33,13 @@
             font-size: 18px;
         }
         .answers {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
+            justify-content: center;
             margin-top: 20px;
         }
         .answer {
-            width: 200px;
             padding: 15px;
             border-radius: 10px;
             color: black;
@@ -63,22 +62,46 @@
             justify-content: center;
             font-size: 24px;
             cursor: pointer;
+            margin-left: auto;
+            margin-right: auto;
         }
     </style>
 </head>
 <body>
     <div class="timer" id="timer">12</div>
-    <div class="question">Quel est le nombre de grains de sable dans le désert?</div>
+    <div class="question-container" id="question">Quel est le nombre de grains de sable dans le désert?</div>
+    <div class="question-container" id="media">Média question</div>
     <div class="answers">
-        <div class="answer red">Réponse 1</div>
-        <div class="answer blue">Réponse 2</div>
-        <div class="answer green">Réponse 3</div>
-        <div class="answer yellow">Réponse 4</div>
+        <div class="answer red" id="answer1">Réponse 1</div>
+        <div class="answer blue" id="answer2">Réponse 2</div>
+        <div class="answer green" id="answer3">Réponse 3</div>
+        <div class="answer yellow" id="answer4">Réponse 4</div>
     </div>
-    <div class="next-btn">&gt;</div>
+    <div class="next-btn" id="next">&gt;</div>
     <script>
+        let questions = [
+            { text: "Quel est le nombre de grains de sable dans le désert?", media: "Média question", answers: ["Réponse 1", "Réponse 2", "Réponse 3", "Réponse 4"] }
+        ];
+        
+        let currentQuestionIndex = 0;
         let timeLeft = 12;
         const timerElement = document.getElementById("timer");
+        const questionElement = document.getElementById("question");
+        const mediaElement = document.getElementById("media");
+        const answerElements = [
+            document.getElementById("answer1"),
+            document.getElementById("answer2"),
+            document.getElementById("answer3"),
+            document.getElementById("answer4")
+        ];
+        const nextButton = document.getElementById("next");
+        
+        function loadQuestion(index) {
+            let question = questions[index];
+            questionElement.textContent = question.text;
+            mediaElement.textContent = question.media;
+            answerElements.forEach((el, i) => el.textContent = question.answers[i]);
+        }
         
         function countdown() {
             if (timeLeft > 0) {
@@ -86,7 +109,15 @@
                 timerElement.textContent = timeLeft;
             }
         }
+        
+        nextButton.addEventListener("click", () => {
+            currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+            loadQuestion(currentQuestionIndex);
+            timeLeft = 12;
+        });
+        
         setInterval(countdown, 1000);
+        loadQuestion(currentQuestionIndex);
     </script>
 </body>
 </html>
