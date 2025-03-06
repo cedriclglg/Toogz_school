@@ -170,14 +170,12 @@
 
             let currentQuestion = questions[currentQuestionIndex];
             console.log(currentQuestion)
-            // ✅ Récupérer l'ID du professeur connecté
             let professorId = await getCurrentUser();
             if (!professorId) {
                 console.error("Impossible de récupérer l'ID du professeur.");
                 return;
             }
 
-            // ✅ Démarrer le timer dans la base de données
             updateTimer(professorId, currentQuestion.id, true);
 
             timerInterval = setInterval(() => {
@@ -193,7 +191,6 @@
             }, 1000);
         }
 
-        // ✅ Fonction pour récupérer l'utilisateur connecté
         async function getCurrentUser() {
             try {
                 const { data, error } = await client.auth.getUser();
