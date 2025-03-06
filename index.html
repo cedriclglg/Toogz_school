@@ -3,140 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Interactif</title>
+    <title>Connexion</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.9.0/dist/umd/supabase.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             margin: 0;
-            padding: 0;
+            background-color: #f0f0f0;
         }
-        .timer {
-            background: #eee;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 20px auto;
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
-        .question-container {
-            background: #eee;
-            padding: 15px;
-            margin: 30px auto;
-            width: 60%;
-            border-radius: 10px;
-            font-size: 18px;
-        }
-        .question-media-container {
-            background: #eee;
-            padding: 100px 15px;
-            margin: 30px auto;
-            width: 60%;
-            border-radius: 10px;
-            font-size: 18px;
-        }
-        .answers {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            justify-content: center;
-            width: 60%;
-            margin: 10px auto;
-        }
-        .answer {
-            padding: 15px;
-            border-radius: 10px;
-            color: black;
-            font-size: 16px;
-            cursor: pointer;
+        .login-container h2 {
             text-align: center;
+            margin-bottom: 20px;
         }
-        .red { background-color: #ff6961; }
-        .blue { background-color: #779ecb; }
-        .green { background-color: #77dd77; }
-        .yellow { background-color: #fdfd96; }
-        .next-btn {
-            margin-top: 20px;
-            background: #ddd;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
+        .input-group {
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            background-color: rgb(166, 255, 185);
+            color: white;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            margin-left: auto;
-            margin-right: auto;
+        }
+        .btn:hover {
+            background-color: rgb(166, 255, 185);
+        }
+        .error {
+            color: rgb(255, 140, 140);
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="timer" id="timer">12</div>
-    <div class="question-container" id="question"></div>
-    <div class="question-media-container" id="media"></div>
-    <div class="answers">
-        <div class="answer red" id="answer1"></div>
-        <div class="answer blue" id="answer2"></div>
-        <div class="answer green" id="answer3"></div>
-        <div class="answer yellow" id="answer4"></div>
+    <div class="login-container">
+        <h2>Connexion</h2>
+        <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Votre email" required>
+        </div>
+        <div class="input-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" placeholder="Votre mot de passe" required>
+        </div>
+        <button class="btn" onclick="login()">Se connecter</button>
+        <p class="error" id="error-message"></p>
     </div>
-    <div class="next-btn" id="next">&gt;</div>
-    <script>
-        let questions = [
-            { text: "Quel est le nombre de grains de sable dans le désert?", media: "Média question", answers: ["1 milliard", "100 milliards", "1 trillion", "Infini"] },
-            { text: "Quelle est la capitale de la France?", media: "Média question", answers: ["Londres", "Berlin", "Paris", "Madrid"] },
-            { text: "Combien de planètes y a-t-il dans le système solaire?", media: "Média question", answers: ["7", "8", "9", "10"] }
-        ];
-        
-        let currentQuestionIndex = 0;
-        let timeLeft = 12;
-        let timerInterval;
 
-        const timerElement = document.getElementById("timer");
-        const questionElement = document.getElementById("question");
-        const mediaElement = document.getElementById("media");
-        const answerElements = [
-            document.getElementById("answer1"),
-            document.getElementById("answer2"),
-            document.getElementById("answer3"),
-            document.getElementById("answer4")
-        ];
-        const nextButton = document.getElementById("next");
-        
-        function loadQuestion(index) {
-            let question = questions[index];
-            questionElement.textContent = question.text;
-            mediaElement.textContent = question.media;
-            answerElements.forEach((el, i) => el.textContent = question.answers[i]);
-            resetTimer();
-        }
-        
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timeLeft = 12;
-            timerElement.textContent = timeLeft;
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    timerElement.textContent = timeLeft;
-                } else {
-                    clearInterval(timerInterval);
+    <script>
+        const supabaseUrl = 'https://cdlpxvaufhskethvhvjo.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHB4dmF1Zmhza2V0aHZodmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0ODE4ODksImV4cCI6MjA1NjA1Nzg4OX0.cyKUEaHhGvd4COolIH3A6_bhO87XNri-fxMYZEFANNY';
+        const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+
+            errorMessage.textContent = '';
+
+            try {
+                const { user, error } = await client.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    throw error;
                 }
-            }, 1000);
+
+                window.location.href = 'home.html';
+            } catch (error) {
+                errorMessage.textContent = error.message;
+            }
         }
-        
-        nextButton.addEventListener("click", () => {
-            currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-            loadQuestion(currentQuestionIndex);
-        });
-        
-        loadQuestion(currentQuestionIndex);
     </script>
 </body>
 </html>

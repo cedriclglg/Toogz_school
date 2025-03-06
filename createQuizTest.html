@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éditeur de Questionnaire</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color1: rgb(255, 140, 140);
+            --color2: rgb(166, 255, 185);
+            --color3: rgb(146, 178, 255);
+            --color4: rgb(246, 255, 66);
+            --gray-light: #f5f5f5;
+            --gray-dark: #dcdcdc;
+            --gray-text: gray;
+            --border-radius: 10px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: white;
+        }
+
+        #sidebar, #options-panel {
+            width: 250px;
+            background-color: var(--gray-light);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .question-item, .option-button, .save-exit, .duration-input {
+            background: var(--gray-dark);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--gray-text);
+            width: calc(100% - 30px);
+            border: none;
+        }
+
+        .save-exit:hover {
+            background: black;
+            color: white;
+        }
+
+        #main-content {
+            flex-grow: 1;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .question-input {
+            width: calc(100% - 40px);
+            background: var(--gray-light);
+            padding: 15px;
+            margin: 10px auto;
+            border-radius: var(--border-radius);
+            border: none;
+            outline: none;
+            text-align: center;
+            font-size: 18px;
+            color: black;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .question-input::placeholder {
+            color: var(--gray-text); 
+            font-weight: normal;
+        }
+
+        .answers-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .answer {
+            padding: 30px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .answer input[type="text"] {
+            background: inherit;
+            border: none;
+            width: 80%;
+            font-weight: bold;
+            text-align: center;
+            height: 3em;
+            color: black;
+            opacity: 0.6; 
+        }
+
+        .answer:nth-child(1) { background-color: var(--color1); }
+        .answer:nth-child(2) { background-color: var(--color3); }
+        .answer:nth-child(3) { background-color: var(--color2); }
+        .answer:nth-child(4) { background-color: var(--color4); }
+
+        .media-upload {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            background: var(--gray-dark);
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto;
+        }
+
+        select, .option-button {
+            width: calc(100% - 30px);
+            padding: 15px;
+            text-align: center;
+            border-radius: var(--border-radius);
+            border: none;
+            font-size: 16px;
+            background: var(--gray-dark);
+            color: var(--gray-text);
+        }
+
+        select:focus, .duration-input:focus, .option-button:focus {
+            outline: none;
+        }
+
+        select option:first-child {
+            color: var(--gray-text);
+        }
+
+        .image-container {
+            display: none;
+            width: 600px;
+            height: 300px;
+            margin: 20px auto;
+            background-color: #e5e5e5;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .question-item {
+            margin-bottom: 10px;
+        }
+
+        .add-media-btn {
+            margin-top: 20px;
+            background: var(--color2);
+            padding: 10px;
+            color: white;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .add-media-btn:hover {
+            background: var(--color3);
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div id="question-list">
+            <div class="question-item">1 <br> Question 1...</div>
+        </div>
+        <div class="question-item" id="add-question-btn">+ Ajouter une question</div>
+    </div>
+
+    <div id="main-content">
+        <input type="text" class="question-input" placeholder="Écrire la question ici...">
+        <div class="media-upload" onclick="document.getElementById('file-upload').click();">+</div>
+        <input type="file" id="file-upload" accept="image/*" style="display:none;">
+
+        <div class="image-container" id="image-container">
+            <img id="image-preview" alt="Image téléchargée" />
+        </div>
+
+        <div class="answers-container">
+            <div class="answer"><input type="text" placeholder="Réponse 1"> <input type="radio" name="answer"></div>
+            <div class="answer"><input type="text" placeholder="Réponse 2"> <input type="radio" name="answer"></div>
+            <div class="answer"><input type="text" placeholder="Réponse 3"> <input type="radio" name="answer"></div>
+            <div class="answer"><input type="text" placeholder="Réponse 4"> <input type="radio" name="answer"></div>
+        </div>
+
+        <div class="add-media-btn" onclick="addMedia()">+</div>
+    </div>
+
+    <div id="options-panel">
+        <select class="option-button">
+            <option selected disabled>Classe</option>
+            <option>CM2 Bleu</option>
+            <option>CM2 Rose</option>
+            <option>CE1</option>
+        </select>
+        <input type="text" class="option-button" placeholder="Titre">
+        <input type="number" class="duration-input" placeholder="Durée (s)">
+        <select class="option-button" id="multi-response" onchange="toggleMultiResponse(this)">
+            <option selected disabled>Multi-réponse</option>
+            <option value="non">NON</option>
+            <option value="oui">OUI</option>
+        </select>
+        <div class="save-exit" onclick="window.location.href='home.html'">Exit</div>
+        <div class="save-exit">Save</div>
+    </div>
+
+    <script>
+        let questionCount = 1;
+    
+        document.getElementById("add-question-btn").addEventListener("click", async function() {
+            const questionInput = document.querySelector(".question-input");
+            const questionContent = questionInput.value;
+            
+            const answers = Array.from(document.querySelectorAll(".answers-container .answer input[type='text']"))
+                .map(input => input.value);
+    
+            const timeInput = document.querySelector(".duration-input");
+            const time = timeInput.value;
+    
+            const goodAnswers = Array.from(document.querySelectorAll(".answers-container .answer input[type='radio']:checked"))
+                .map(input => input.parentElement.querySelector('input[type="text"]').value.trim());
+    
+            await addQuestionToDB(questionContent, answers, time, goodAnswers);
+            console.log(questionContent)
+            questionCount++;
+    
+            const questionItem = document.createElement("div");
+            questionItem.classList.add("question-item");
+            questionItem.innerHTML = `${questionCount} <br> Question ${questionCount}...`;
+            document.getElementById("question-list").appendChild(questionItem);
+
+            questionInput.value = ''; 
+            questionInput.placeholder = `Écrire la question ${questionCount} ici...`;
+    
+            const answerInputs = document.querySelectorAll(".answers-container .answer input[type='text']");
+            answerInputs.forEach(input => {
+                input.value = ''; 
+            });
+    
+            const optionsPanel = document.getElementById("options-panel");
+            optionsPanel.querySelector("input[type='number']").value = '';
+            optionsPanel.querySelector("input[type='text']").value = '';
+            optionsPanel.querySelector("#multi-response").value = 'non';
+        });
+    
+        function toggleMultiResponse(select) {
+            const responses = document.querySelectorAll('.answers-container .answer input[type="radio"], .answers-container .answer input[type="checkbox"]');
+            responses.forEach(input => {
+                input.type = select.value === 'oui' ? 'checkbox' : 'radio';
+            });
+        }
+    
+        function addMedia() {
+            const mediaContainer = document.createElement("div");
+            mediaContainer.classList.add("media-upload");
+            mediaContainer.innerHTML = "+ Ajouter un média";
+    
+            mediaContainer.addEventListener("click", function() {
+                document.getElementById('file-upload').click();
+            });
+    
+            document.getElementById("main-content").appendChild(mediaContainer);
+        }
+    
+        const supabaseUrl = "https://cdlpxvaufhskethvhvjo.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHB4dmF1Zmhza2V0aHZodmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0ODE4ODksImV4cCI6MjA1NjA1Nzg4OX0.cyKUEaHhGvd4COolIH3A6_bhO87XNri-fxMYZEFANNY";
+        const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+    
+        async function addQuestionToDB(questionContent, answers, time, goodAnswers) {
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const quizId = urlParams.get('quizId'); 
+            if (quizId) {
+                console.log("ID du quiz récupéré depuis l'URL : ", quizId);
+            } else {
+                console.log("Aucun quizId trouvé dans l'URL.");
+            }
+            const { data, error } = await client
+                .from('questions') 
+                .insert([
+                    { quiz_id: quizId, content: questionContent, answers: answers, duration: time, good_answers: goodAnswers }
+                ]);
+    
+            if (error) {
+                console.error('Erreur lors de l\'ajout de la question :', error);
+            } else {
+                console.log('Question ajoutée à la DB :', data);
+            }
+        }
+
+    </script>
+       
+</body>
+</html>
