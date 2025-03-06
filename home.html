@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Page Accueil</title>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.9.0/dist/umd/supabase.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --color1: rgb(255, 140, 140);
+                --color2: rgb(166, 255, 185);
+                --color3: rgb(146, 178, 255);
+                --color4: rgb(246, 255, 66);
+            }
+    
+            body {
+                display: flex;
+                height: 100vh;
+                margin: 0;
+                font-family: 'Poppins', sans-serif;
+                background-color: white;
+            }
+    
+            #sidebar {
+                width: 250px;
+                background-color: var(--color3);
+                color: white;
+                padding-top: 20px;
+                display: flex;
+                flex-direction: column;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                align-items: center;
+            }
+    
+            #sidebar a {
+                padding: 15px;
+                text-decoration: none;
+                color: white;
+                font-size: 18px;
+                border-bottom: 1px solid white;
+                text-align: center;
+            }
+    
+            #sidebar a:hover {
+                background-color: var(--color2);
+            }
+    
+            #mainContent {
+                flex-grow: 1;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+    
+        .content-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        #quiz-list-container {
+            width: 60%;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #quiz-list-container h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #quiz-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        #quiz-list li {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+            transition: background-color 0.3s ease; 
+        }
+
+        #quiz-list li:last-child {
+            border-bottom: none;
+        }
+
+        #quiz-list li a {
+            display: block; 
+            text-decoration: none; 
+            color: #333; 
+            font-weight: bold;
+        }
+
+        #quiz-list li a:hover {
+            background-color: #e0e0e0;
+            cursor: pointer;
+        }
+
+            .buttons-container {
+                width: 60%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+    
+            .block {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 200px;
+                width: 60%;
+                border-radius: 10px;
+                font-size: 20px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: background-color 0.3s;
+                color: white;
+            }
+    
+            .block:hover {
+                background-color: var(--color2);
+            }
+    
+            .createQuiz {
+                background-color: var(--color1);
+            }
+    
+            .startQuiz {
+                background-color: var(--color1);
+            }
+    
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: rgba(0, 0, 0, 0.5);
+                padding-top: 60px;
+            }
+    
+            .modal-content {
+                background-color: white;
+                margin: 5% auto;
+                padding: 20px;
+                border: 1px solid #888;
+                width: 80%;
+                max-width: 700px;
+                border-radius: 10px;
+            }
+    
+            .modal-header {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+    
+            .modal input,
+            .modal textarea {
+                width: 95%;
+                padding: 10px;
+                margin-bottom: 15px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+    
+            .modal button {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background-color: var(--color1);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                cursor: pointer;
+                border-radius: 5px;
+                transition: background-color 0.3s;
+            
+            }
+    
+            .modal button:hover {
+                background-color: var(--color2);
+            }
+    
+            .close {
+                font-size: 28px;
+                font-weight: bold;
+                position: absolute;
+                right: 25px;
+                top: 0;
+                color: black;
+            }
+    
+            .close:hover {
+                color: red;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div id="sidebar">
+            <a href="stats.html">Mes Statistiques</a>
+            <a href="student.html">Mes Élèves</a>
+        </div>
+    
+        <div id="mainContent">
+            <div class="content-container">
+                <div id="quiz-list-container">
+                    <h2>Derniers Quiz</h2>
+                    <ul id="quiz-list"></ul>
+                </div>
+    
+                <div class="buttons-container">
+                    <div class="block createQuiz" onclick="openModal()">
+                        <p>Créer un Quiz</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div id="quizModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <div class="modal-header">Créer un Nouveau Quiz</div>
+                <form id="quizForm">
+                    <input type="text" id="quizTitle" placeholder="Titre du Quiz" required>
+                    <textarea id="quizDescription" placeholder="Description du Quiz" required></textarea>
+                    <button type="submit">Créer le Quiz</button>
+                </form>
+            </div>
+        </div>
+    </body>
+    
+
+    <script>
+        function openModal() {
+            document.getElementById("quizModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("quizModal").style.display = "none";
+        }
+
+        const supabaseUrl = "https://cdlpxvaufhskethvhvjo.supabase.co";
+        const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHB4dmF1Zmhza2V0aHZodmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0ODE4ODksImV4cCI6MjA1NjA1Nzg4OX0.cyKUEaHhGvd4COolIH3A6_bhO87XNri-fxMYZEFANNY";
+        const clientSupabase = supabase.createClient(supabaseUrl, supabaseKey); 
+
+        async function getCurrentUser() {
+            try {
+                const { data, error } = await clientSupabase.auth.getUser();  
+                if (error) {
+                    console.error("Erreur lors de la récupération de l'utilisateur : ", error);
+                    return null;
+                }
+                if (data.user) {
+                    console.log("Utilisateur connecté : ", data.user);
+                    return data.user.id;  
+                } else {
+                    console.log("Aucun utilisateur connecté");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération de l'utilisateur : ", error);
+                return null;
+            }
+        }
+
+        document.getElementById("quizForm").addEventListener("submit", function(e) {
+            e.preventDefault();  
+            const quizTitle = document.getElementById("quizTitle").value;
+            const quizDescription = document.getElementById("quizDescription").value;
+
+            console.log("Tentative de création de quiz avec : ", quizTitle, quizDescription);
+
+            getCurrentUser().then(uuid => {
+                if (uuid) {
+                    console.log("Utilisateur trouvé avec UUID : ", uuid);
+                    addQuizToDB(uuid, quizTitle, quizDescription).then(quizId => {
+                        closeModal();
+                        console.log("Quiz ajouté à la base de données avec ID : ", quizId);
+                    });
+                }
+            }).catch(error => {
+                console.error("Erreur lors de la récupération de l'utilisateur : ", error);
+            });
+        });
+
+        async function addQuizToDB(userId, title, description) {
+            try {
+                const { data, error } = await clientSupabase
+                    .from('quizzes')
+                    .insert([{ 
+                        title: title, 
+                        description: description, 
+                        professor_id: userId 
+                    }])
+                    .select('id');
+
+                if (error) {
+                    console.error("Erreur lors de l'ajout du quiz : ", error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    const quizId = data[0].id; 
+                    console.log("quizId", quizId)
+
+                    if (quizId) {
+                        console.log("Quiz ajouté à la base de données avec ID : ", quizId);
+                        window.location.href = `createQuizTest.html?quizId=${quizId}`;
+                    } else {
+                        console.error("ID du quiz manquant dans les données retournées.");
+                    }
+                } else {
+                    console.error("Aucun quiz ajouté, données non valides : ", data);
+                }
+            } catch (error) {
+                console.error("Erreur lors de l'ajout du quiz : ", error);
+            }
+        }
+
+        clientSupabase.auth.onAuthStateChange((event, session) => {
+            console.log("Événement d'authentification : ", event);
+            if (session) {
+                console.log("Utilisateur connecté : ", session.user);
+            } else {
+                console.log("Utilisateur déconnecté");
+            }
+        });
+        
+        
+        async function fetchQuizzes() {
+            try {
+                const uuid = await getCurrentUser(); 
+
+                if (!uuid) {
+                    console.error("Aucun utilisateur trouvé.");
+                    return;
+                }
+
+                console.log("Utilisateur trouvé avec UUID : ", uuid);
+
+                const { data, error } = await clientSupabase
+                    .from("quizzes")
+                    .select("id, title, description")
+                    .eq("professor_id", uuid)
+                    .order("id", { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    console.error("Erreur lors de la récupération des quizs :", error);
+                    return;
+                }
+
+                const quizList = document.getElementById("quiz-list");
+                quizList.innerHTML = ""; 
+
+                if (data.length === 0) {
+                    quizList.innerHTML = "<li>Aucun quiz trouvé.</li>";
+                    return;
+                }
+
+                data.forEach(quiz => {
+                    const listItem = document.createElement("li");
+
+                    const quizLink = document.createElement("a");
+                    console.log("ID du quiz:", quiz.id);
+                    quizLink.href = `quiz.html?quizId=${quiz.id}`; 
+                    quizLink.innerHTML = `<strong>${quiz.title}</strong> - <span>${quiz.description}</span>`;
+
+                    listItem.appendChild(quizLink); 
+                    quizList.appendChild(listItem); 
+        });
+
+            } catch (error) {
+                console.error("Erreur lors de la récupération des quizs :", error);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchQuizzes);
+
+    </script>
+</body>
+</html>

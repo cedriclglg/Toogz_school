@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Élèves</title>
+    <!-- Lien vers Google Fonts pour la police Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Définition des couleurs */
+        :root {
+            --color3: rgb(146, 178, 255); /* Bleu clair */
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif; /* Applique la police Poppins */
+            background-color: white; /* Fond blanc */
+            display: flex;
+            height: 100vh; /* Prend toute la hauteur de la fenêtre */
+        }
+
+        /* Barre latérale */
+        #sidebar {
+            width: 250px;
+            background-color: var(--color3);
+            color: white;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            align-items: center;
+        }
+
+        #sidebar a {
+            padding: 15px;
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            border-bottom: 1px solid white;
+            text-align: center;
+        }
+
+        #sidebar a:hover {
+            background-color: #a6ffb9; /* Vert clair au survol */
+        }
+
+        /* Contenu principal */
+        #mainContent {
+            flex-grow: 1;
+            padding: 20px;
+            text-align: center; /* Texte centré */
+        }
+
+        /* Titre de la page */
+        #pageTitle {
+            font-size: 30px;
+            color: black;
+            margin-top: 50px;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Barre latérale -->
+    <div id="sidebar">
+        <a href="home.html">Accueil</a>
+    </div>
+
+    <!-- Contenu principal -->
+    <div id="mainContent">
+        <!-- Titre de la page -->
+        <div id="pageTitle">
+            Mes Statistiques
+        </div>
+    </div>
+</body>
+</html>

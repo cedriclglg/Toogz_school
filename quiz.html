@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interactif</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+        }
+        .timer {
+            background: #eee;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px auto;
+        }
+        .question-container, .question-media-container {
+            background: #eee;
+            padding: 15px;
+            margin: 30px auto;
+            width: 60%;
+            border-radius: 10px;
+            font-size: 18px;
+        }
+        .question-media-container {
+            padding: 100px 15px;
+        }
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            justify-content: center;
+            width: 60%;
+            margin: 10px auto;
+        }
+        .answer {
+            padding: 15px;
+            border-radius: 10px;
+            color: black;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .red { background-color: #ff6961; }
+        .blue { background-color: #779ecb; }
+        .green { background-color: #77dd77; }
+        .yellow { background-color: #fdfd96; }
+        .next-btn {
+            margin-top: 20px;
+            background: #ddd;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="timer" id="timer">12</div>
+    <div class="question-container" id="question"></div>
+    <div class="question-media-container" id="media"></div>
+    <div class="answers">
+        <div class="answer red" id="answer1"></div>
+        <div class="answer blue" id="answer2"></div>
+        <div class="answer green" id="answer3"></div>
+        <div class="answer yellow" id="answer4"></div>
+    </div>
+    <div class="next-btn" id="next">&gt;</div>
+
+    <script>
+        const client = supabase.createClient('https://cdlpxvaufhskethvhvjo.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkbHB4dmF1Zmhza2V0aHZodmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0ODE4ODksImV4cCI6MjA1NjA1Nzg4OX0.cyKUEaHhGvd4COolIH3A6_bhO87XNri-fxMYZEFANNY');
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let timeLeft = 12;
+        let timerInterval;
+
+        const timerElement = document.getElementById("timer");
+        const questionElement = document.getElementById("question");
+        const mediaElement = document.getElementById("media");
+        const answerElements = [
+            document.getElementById("answer1"),
+            document.getElementById("answer2"),
+            document.getElementById("answer3"),
+            document.getElementById("answer4")
+        ];
+        const nextButton = document.getElementById("next");
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const quizId = urlParams.get('quizId');
+
+        async function fetchQuestions() {
+            if (!quizId) {
+                console.error("ID du quiz manquant dans l'URL");
+                return;
+            }
+
+            let { data, error } = await client.from('questions').select('*').eq('quiz_id', quizId);
+            console.log("Données reçues :", data);
+
+            if (error) {
+                console.error('Erreur lors de la récupération des questions:', error);
+            } else {
+                questions = data.map(q => ({
+                    id: q.id,
+                    text: q.content,
+                    media: q.media || "",
+                    answers: Array.isArray(q.answers) ? q.answers : [], 
+                    goodAnswer: q.good_answers,
+                    time: q.duration || 12
+                }));
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        function loadQuestion(index) {
+            if (questions.length === 0) return;
+            let question = questions[index];
+            questionElement.textContent = question.text;
+
+            if (question.media && question.media.startsWith("http")) {
+                mediaElement.innerHTML = `<img src="${question.media}" alt="Question Media" style="max-width:400px; max-height:800px; width:auto; height:auto; display:block; margin: 0 auto;">`;
+            } else {
+                mediaElement.innerHTML = "";
+            }
+
+            answerElements.forEach((el, i) => {
+                el.textContent = question.answers[i] || "";
+            });
+
+            resetTimer(question.time);
+        }
+
+        async function updateTimer(professorId, questionId, isStarted) {
+            const { error } = await client
+                .from('timer')
+                .update({
+                    question_id: isStarted ? questionId : null,
+                    is_timer_started: isStarted
+                })
+                .eq('professor_id', professorId);
+
+            if (error) {
+                console.error('Erreur lors de la mise à jour du timer:', error);
+            } else {
+                console.log(`Timer mis à jour pour le professeur ${professorId}: ${isStarted ? 'Démarré' : 'Arrêté'}`);
+            }
+        }
+
+        async function resetTimer(duration) {
+            clearInterval(timerInterval);
+            timeLeft = duration || 12;
+            timerElement.textContent = timeLeft;
+
+            let currentQuestion = questions[currentQuestionIndex];
+            console.log(currentQuestion)
+            // ✅ Récupérer l'ID du professeur connecté
+            let professorId = await getCurrentUser();
+            if (!professorId) {
+                console.error("Impossible de récupérer l'ID du professeur.");
+                return;
+            }
+
+            // ✅ Démarrer le timer dans la base de données
+            updateTimer(professorId, currentQuestion.id, true);
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                } else {
+                    clearInterval(timerInterval);
+
+                    // ⏹️ Arrêter le timer dans la base de données
+                    updateTimer(professorId, null, false);
+                }
+            }, 1000);
+        }
+
+        // ✅ Fonction pour récupérer l'utilisateur connecté
+        async function getCurrentUser() {
+            try {
+                const { data, error } = await client.auth.getUser();
+                if (error) {
+                    console.error("Erreur lors de la récupération de l'utilisateur : ", error);
+                    return null;
+                }
+                if (data.user) {
+                    console.log("Utilisateur connecté : ", data.user);
+                    return data.user.id;  
+                } else {
+                    console.log("Aucun utilisateur connecté");
+                    return null;
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération de l'utilisateur : ", error);
+                return null;
+            }
+        }
+
+
+
+        nextButton.addEventListener("click", () => {
+            currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+            loadQuestion(currentQuestionIndex);
+        });
+
+        fetchQuestions();
+    </script>    
+</body>
+</html>
